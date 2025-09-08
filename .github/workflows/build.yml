@@ -8,7 +8,7 @@ jobs:
   build-windows:
     runs-on: windows-latest
     env:
-      GH_TOKEN: ${{ secrets.GH_TOKEN }}  # 用于 electron-builder 发布（可选）
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
     steps:
       - name: Checkout code
@@ -29,7 +29,7 @@ jobs:
         run: npm run dist:win
 
       - name: Upload Windows build artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: phoneinfo-win
-          path: dist/win-unpacked/**   # 打包输出目录
+          path: dist/win-unpacked/**
