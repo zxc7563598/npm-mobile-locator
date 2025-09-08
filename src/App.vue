@@ -42,7 +42,8 @@ onMounted(async () => {
 // 下载 CSV 示例
 const downloadExample = () => {
     const csvContent = "手机号\n13000000000\n13000010000\n13000020000";
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    // 加 BOM 防止 Windows Excel 中文乱码
+    const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -67,15 +68,12 @@ const handleFileUpload = (event) => {
         skipEmptyLines: true,
         chunkSize: 1024 * 1024, // 每次读 1MB
         chunk: (results, parser) => {
-            // 逐批处理
             const lines = results.data.map((row) => {
                 const prefix = row.phone?.slice(0, 7);
                 const info = phoneMap?.get(prefix) || {};
                 return `${row.phone},${info.province || ""},${info.city || ""},${info.isp || ""}`;
             });
             csvOutput += lines.join("\n") + "\n";
-
-            // 更新处理进度
             processedCount.value += results.data.length;
         },
         complete: () => {
@@ -93,7 +91,8 @@ const handleFileUpload = (event) => {
 
 // 下载匹配结果 CSV
 const downloadResult = () => {
-    const blob = new Blob([resultCsv.value], { type: "text/csv;charset=utf-8;" });
+    // 加 BOM 防止 Windows Excel 中文乱码
+    const blob = new Blob(["\uFEFF" + resultCsv.value], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
