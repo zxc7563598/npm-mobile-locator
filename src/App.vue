@@ -69,7 +69,6 @@ const handleFileUpload = (event) => {
                 const info = phoneMap?.get(prefix) || {};
                 return `${phoneVal},${info.province || ""},${info.city || ""},${info.isp || ""}`;
             });
-
             csvOutput += lines.join("\n") + "\n";
             processedCount.value += rows.length;
         },
@@ -95,6 +94,11 @@ const downloadResult = () => {
     a.href = url;
     a.download = "匹配结果.csv";
     a.click();
+    // 下载后重置状态
+    processedCount.value = 0;
+    resultReady.value = false;
+    resultCsv.value = "";
+    document.getElementById("file-upload").value = null; // 清空文件选择
 };
 </script>
 
