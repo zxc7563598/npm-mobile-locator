@@ -57,20 +57,24 @@ const handleFileUpload = (event) => {
     resultReady.value = false;
     let csvOutput = "手机号,省,市,运营商\n";
     Papa.parse(file, {
-        header: true,
+        header: false,
         skipEmptyLines: true,
         chunkSize: 1024 * 1024,
-        chunk: (results, parser) => {
-            const lines = results.data.map((row) => {
-                const prefix = row['手机号']?.slice(0, 7);
+        chunk: (results) => {
+            const data = results.data;
+            const rows = data.slice(1);
+            const lines = rows.map((row) => {
+                const phoneVal = row[0];
+                const prefix = phoneVal?.slice(0, 7);
                 const info = phoneMap?.get(prefix) || {};
-                return `${row['手机号']},${info.province || ""},${info.city || ""},${info.isp || ""}`;
+                return `${phoneVal},${info.province || ""},${info.city || ""},${info.isp || ""}`;
             });
+
             csvOutput += lines.join("\n") + "\n";
-            processedCount.value += results.data.length;
+            processedCount.value += rows.length;
         },
         complete: () => {
-            resultCsv.value = csvOutput;
+            resultCsv.value = "\uFEFF" + csvOutput;
             resultReady.value = true;
             loading.value = false;
             alert(`✅ 匹配完成，共处理 ${processedCount.value} 条数据！`);
@@ -80,6 +84,7 @@ const handleFileUpload = (event) => {
             alert("❌ CSV 处理失败：" + err.message);
         }
     });
+
 };
 
 // 下载匹配结果 CSV
