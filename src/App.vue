@@ -3,20 +3,17 @@
         <div class="card">
             <h1>📱 手机号信息匹配工具</h1>
             <p class="subtitle">1. 点下载示例 CSV 文件。示例只包含一列“手机号”。</p>
-            <p class="subtitle">2. 在第一列填写你要查询的手机号，每行一个。</p>
+            <p class="subtitle">2. 在 第一列 第二行 开始填写你要查询的手机号，每行一个，不要去动第一行</p>
             <p class="subtitle">3. 上传填写好的 CSV，系统会匹配每个手机号的省份、城市和运营商。</p>
             <p class="subtitle">4. 结果保持上传顺序，即使原文件有其他列也可按顺序匹配。</p>
             <p class="subtitle">5. 下载结果 CSV，将匹配信息拷贝回原文件即可。</p>
-            <!-- 下载 CSV 示例 -->
             <button class="btn primary" @click="downloadExample" :disabled="loading">下载 CSV 示例</button>
-            <!-- 上传 CSV 文件 -->
             <div class="upload">
                 <label for="file-upload" class="btn secondary" :class="{ disabled: loading }">
                     {{ loading ? `处理中... (${processedCount} 条)` : '上传 CSV 文件' }}
                 </label>
                 <input id="file-upload" type="file" @change="handleFileUpload" accept=".csv" :disabled="loading" />
             </div>
-            <!-- 下载匹配结果 -->
             <button v-if="resultReady" class="btn success" @click="downloadResult">下载匹配结果</button>
         </div>
     </div>
@@ -47,7 +44,7 @@ const downloadExample = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "example.csv";
+    a.download = "手机号上传示例.csv";
     a.click();
 };
 
@@ -55,23 +52,19 @@ const downloadExample = () => {
 const handleFileUpload = (event) => {
     const file = event.target.files[0];
     if (!file) return;
-
     loading.value = true;
     processedCount.value = 0;
     resultReady.value = false;
-
-    // 初始化 CSV 结果，先写入表头
     let csvOutput = "手机号,省,市,运营商\n";
-
     Papa.parse(file, {
         header: true,
         skipEmptyLines: true,
-        chunkSize: 1024 * 1024, // 每次读 1MB
+        chunkSize: 1024 * 1024,
         chunk: (results, parser) => {
             const lines = results.data.map((row) => {
-                const prefix = row.phone?.slice(0, 7);
+                const prefix = row['手机号']?.slice(0, 7);
                 const info = phoneMap?.get(prefix) || {};
-                return `${row.phone},${info.province || ""},${info.city || ""},${info.isp || ""}`;
+                return `${row['手机号']},${info.province || ""},${info.city || ""},${info.isp || ""}`;
             });
             csvOutput += lines.join("\n") + "\n";
             processedCount.value += results.data.length;
@@ -91,18 +84,16 @@ const handleFileUpload = (event) => {
 
 // 下载匹配结果 CSV
 const downloadResult = () => {
-    // 加 BOM 防止 Windows Excel 中文乱码
     const blob = new Blob(["\uFEFF" + resultCsv.value], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "result.csv";
+    a.download = "匹配结果.csv";
     a.click();
 };
 </script>
 
 <style scoped>
-/* 页面居中 */
 .container {
     display: flex;
     justify-content: center;
@@ -112,7 +103,6 @@ const downloadResult = () => {
     font-family: "Helvetica Neue", Arial, sans-serif;
 }
 
-/* 卡片容器 */
 .card {
     background: white;
     padding: 40px 30px;
@@ -123,7 +113,6 @@ const downloadResult = () => {
     max-width: 500px;
 }
 
-/* 标题 */
 .card h1 {
     font-size: 24px;
     margin-bottom: 10px;
@@ -137,7 +126,6 @@ const downloadResult = () => {
     text-align: left;
 }
 
-/* 按钮样式 */
 .btn {
     display: inline-block;
     padding: 10px 20px;
@@ -150,7 +138,6 @@ const downloadResult = () => {
     border: none;
 }
 
-/* 主题色 */
 .btn.primary {
     margin-top: 30px;
     background: #3498db;
@@ -179,7 +166,6 @@ const downloadResult = () => {
     background: #27ae60;
 }
 
-/* 上传文件隐藏原生样式 */
 .upload input[type="file"] {
     display: none;
 }
