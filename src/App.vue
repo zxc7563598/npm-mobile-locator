@@ -56,21 +56,26 @@ const handleFileUpload = (event) => {
     processedCount.value = 0;
     resultReady.value = false;
     let csvOutput = "手机号,省,市,运营商\n";
+    let isFirstChunk = true;
     Papa.parse(file, {
         header: false,
         skipEmptyLines: true,
         chunkSize: 1024 * 1024,
         chunk: (results) => {
-            const data = results.data;
-            const rows = data.slice(1);
-            const lines = rows.map((row) => {
+            let data = results.data;
+            // 只在第一次 chunk 时跳过表头
+            if (isFirstChunk) {
+                data = data.slice(1);
+                isFirstChunk = false;
+            }
+            const lines = data.map((row) => {
                 const phoneVal = row[0];
                 const prefix = phoneVal?.slice(0, 7);
                 const info = phoneMap?.get(prefix) || {};
                 return `${phoneVal},${info.province || ""},${info.city || ""},${info.isp || ""}`;
             });
             csvOutput += lines.join("\n") + "\n";
-            processedCount.value += rows.length;
+            processedCount.value += data.length;
         },
         complete: () => {
             resultCsv.value = "\uFEFF" + csvOutput;
@@ -83,7 +88,6 @@ const handleFileUpload = (event) => {
             alert("❌ CSV 处理失败：" + err.message);
         }
     });
-
 };
 
 // 下载匹配结果 CSV
