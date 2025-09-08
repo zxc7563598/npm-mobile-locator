@@ -11,7 +11,7 @@
   },
   "build": {
     "appId": "com.example.phoneinfo",
-    "productName": "PhoneInfo",
+    "productName": "手机号归属地批量查询工具",
     "files": [
       "dist/**/*",
       "main.js",
